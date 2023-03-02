@@ -10,7 +10,7 @@ box::use(
 box::use(
 
   app/logic/dados,
-  app/logic/aux,
+  app/logic/aux_geral,
   app/logic/vis_tabelas,
   app/view/shiny_aux,
 
@@ -109,7 +109,7 @@ server <- function(id, reac_geral, db_pool = NULL){
       reset('nome')
       reset('descricao')
 
-      aux$focus_input(ns('nome'))
+      aux_geral$focus_input(ns('nome'))
 
 
     })

@@ -10,7 +10,7 @@ box::use(
 box::use(
 
   app/logic/dados,
-  app/logic/aux,
+  app/logic/aux_geral,
   app/logic/vis_tabelas,
   app/view/shiny_aux,
 

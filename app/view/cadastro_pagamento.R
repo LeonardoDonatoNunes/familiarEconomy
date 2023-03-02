@@ -10,7 +10,7 @@ box::use(
 box::use(
 
   app/logic/dados,
-  app/logic/aux,
+  app/logic/aux_geral,
   app/logic/vis_tabelas,
   app/view/shiny_aux
 
@@ -31,8 +31,8 @@ ui <- function(id) {
         shiny$selectInput(ns('cat_espec_id'), "Categoria específica", choices = NULL),
         shiny$checkboxInput(ns('mostrar_todas_categorias'), "Mostrar todas as categorias específicas", value = FALSE),
         shiny$checkboxInput(ns('somente_categorias_usuario'), "Mostrar somente categorias do usuário", value = FALSE),
-        shiny$selectInput(ns('ano_ref'), "Ano referência", choices = aux$vct_anos(), selected = aux$ano_ultimo_mes()),
-        shiny$selectInput(ns('mes_ref'), "Mês referência", choices = aux$vct_meses(), selected = aux$ultimo_mes()),
+        shiny$selectInput(ns('ano_ref'), "Ano referência", choices = aux_geral$vct_anos(), selected = aux_geral$ano_ultimo_mes()),
+        shiny$selectInput(ns('mes_ref'), "Mês referência", choices = aux_geral$vct_meses(), selected = aux_geral$ultimo_mes()),
         shinyWidgets$currencyInput(ns('valor'), "Valor", 0, format = "Brazilian"),
         shiny$numericInput(ns('numero_parcelas'), "Número de parcelas", value = 1, min = 1),
         shiny$numericInput(ns('parcela_numero'), "Parcela", value = 1, min = 1),
@@ -196,7 +196,7 @@ server <- function(id, reac_geral, db_pool = NULL){
       reset('nome')
       reset('descricao')
 
-      aux$focus_input(ns('cat_espec_id'))
+      aux_geral$focus_input(ns('cat_espec_id'))
 
 
     })

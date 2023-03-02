@@ -7,7 +7,7 @@ box::use(
 box::use(
   app/logic/db_connect,
   app/logic/dados,
-  app/logic/aux,
+  app/logic/aux_geral,
 )
 
 conectar_db <- FALSE
@@ -19,7 +19,7 @@ if (conectar_db) {
 }
 
 #' @export
-receita_despesa <- function(db_pool, ano_ref = aux$ano_ultimo_mes(), mes_ref = aux$ultimo_mes()) {
+receita_despesa <- function(db_pool, ano_ref = aux_geral$ano_ultimo_mes(), mes_ref = aux_geral$ultimo_mes()) {
 
   df <- dados$get_pagamento(db_pool, ano_ref = ano_ref, mes_ref = as.numeric(mes_ref))
 

@@ -10,7 +10,7 @@ box::use(
 
 
 box::use(
-  app/logic/aux
+  app/logic/aux_geral
 )
 
 
@@ -73,7 +73,7 @@ get_usuario <- function(db_pool,id = NULL, nome = NULL) {
 
   con <- poolCheckout(db_pool)
 
-  where <- aux$create_where(c(id = id, nome = nome))
+  where <- aux_geral$create_where(c(id = id, nome = nome))
   statement <- glue::glue("select *, FALSE as add, FALSE as new from usuario{where};")
   resp <- DBI::dbGetQuery(con, statement)
 
@@ -88,7 +88,7 @@ get_receita <- function(db_pool, id = NULL, nome = NULL, ano_ref = NULL, mes_ref
 
   con <- poolCheckout(db_pool)
 
-  where <- aux$create_where(c(r.id = id, r.nome = nome, r.ano_ref = ano_ref, r.mes_ref = mes_ref))
+  where <- aux_geral$create_where(c(r.id = id, r.nome = nome, r.ano_ref = ano_ref, r.mes_ref = mes_ref))
   statement <- glue("
         select r.*,
                u.nome as usuario
@@ -107,7 +107,7 @@ get_cat_geral <- function(db_pool, id = NULL) {
 
   con <- poolCheckout(db_pool)
 
-  where <- aux$create_where(c(id = id))
+  where <- aux_geral$create_where(c(id = id))
 
   statement <- glue("select *, FALSE as add, FALSE as new from categoria_despesa_geral{where}")
 
@@ -126,7 +126,7 @@ get_cat_espec <- function(db_pool, id = NULL, cat_geral_id = NULL, usuario_id = 
 
   con <- poolCheckout(db_pool)
 
-  where <- aux$create_where(c(cde.id = id, cde.cat_geral_id = cat_geral_id, cde.usuario_id = usuario_id))
+  where <- aux_geral$create_where(c(cde.id = id, cde.cat_geral_id = cat_geral_id, cde.usuario_id = usuario_id))
 
   statement <- glue("
           select cde.*,
@@ -154,7 +154,7 @@ get_pagamento <- function(db_pool, id = NULL, cat_espec_id = NULL, ano_ref = NUL
 
   con <- poolCheckout(db_pool)
 
-  where <- aux$create_where(c(p.id = id, p.cat_espec_id = cat_espec_id, p.ano_ref = ano_ref, p.mes_ref = mes_ref, p.usuario_id = usuario_id))
+  where <- aux_geral$create_where(c(p.id = id, p.cat_espec_id = cat_espec_id, p.ano_ref = ano_ref, p.mes_ref = mes_ref, p.usuario_id = usuario_id))
 
   statement <- glue("
           select p.*,

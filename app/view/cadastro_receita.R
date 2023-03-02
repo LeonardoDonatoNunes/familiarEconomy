@@ -9,7 +9,7 @@ box::use(
 box::use(
 
   app/logic/dados,
-  app/logic/aux,
+  app/logic/aux_geral,
   app/logic/vis_tabelas,
 
 )
@@ -25,8 +25,8 @@ ui <- function(id) {
       shiny$textInput(ns('nome'), "Nome da receita"),
       shinyWidgets$currencyInput(ns('valor'), "Valor", 0, format = "Brazilian"),
       shiny$checkboxInput(ns('mensal'), "Receita mensal", value = TRUE),
-      shiny$selectInput(ns('ano_ref'), "Ano referência", choices = aux$vct_anos(), selected = aux$ano_ultimo_mes()),
-      shiny$selectInput(ns('mes_ref'), "Mês referência", choices = aux$vct_meses(), selected = aux$ultimo_mes()),
+      shiny$selectInput(ns('ano_ref'), "Ano referência", choices = aux_geral$vct_anos(), selected = aux_geral$ano_ultimo_mes()),
+      shiny$selectInput(ns('mes_ref'), "Mês referência", choices = aux_geral$vct_meses(), selected = aux_geral$ultimo_mes()),
       shiny$actionButton(ns('salvar'), "Salvar", icon = shiny$icon("cloud-arrow-up")),
       hidden(shiny$actionButton(ns('deletar'), "Deletar", icon = shiny$icon("trash")))
     ),
