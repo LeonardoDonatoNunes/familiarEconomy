@@ -1,0 +1,77 @@
+
+  .modal-content {
+    border-radius: 5px;
+  }
+
+  .skin-yellow .main-header .navbar .sidebar-toggle {
+    color:#000;
+  }
+
+  div.seletor_usuario div.selectize-input {
+      height: 36px;
+      display: flex;
+      justify-content: flex-end;
+  }
+
+  div.seletor_usuario div.selectize-input {
+      text-align: right;
+      padding-right: 32px;
+      background-color: transparent;
+      border: 0px;
+      color: #000;
+      font-weight: bold;
+      box-shadow: none;
+      transform: translateY(10px);
+  }
+
+
+  .seletor_usuario div.item:before {
+    content: "👤 ";
+  }
+
+
+  .seletor_mes div.item:before {
+    content: "📅 ";
+  }
+
+  div.sweet-alert.modal_loader {
+    background-color: #000000cc !important;
+  }
+
+  .display_flex_row {
+    display: flex;
+    gap: 15px;
+  }
+
+  .flex_start {
+    justify-content: flex-start;
+  }
+
+  fieldset.terminal_r textarea {
+    background-color: #272822;
+    font-size: 18px;
+    color: #f39c12;
+  }
+
+.reactable-tag {
+    display: inline-block;
+    padding: 2px 12px;
+    border-radius: 15px;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.reactable-status-success {
+    background: hsl(116, 60%, 90%);
+    color: hsl(116, 30%, 25%);
+}
+
+.reactable-status-pending {
+      background: hsl(230, 70%, 90%);
+    color: hsl(230, 45%, 30%);
+}
+
+.reactable-status-danger {
+    background: hsl(350, 70%, 90%);
+    color: hsl(350, 45%, 30%);
+}

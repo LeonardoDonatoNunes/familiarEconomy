@@ -1,0 +1,75 @@
+@charset "UTF-8";
+.modal-content {
+  border-radius: 5px;
+}
+
+.skin-yellow .main-header .navbar .sidebar-toggle {
+  color: #000;
+}
+
+div.seletor_usuario div.selectize-input {
+  height: 36px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+div.seletor_usuario div.selectize-input {
+  text-align: right;
+  padding-right: 32px;
+  background-color: transparent;
+  border: 0px;
+  color: #000;
+  font-weight: bold;
+  box-shadow: none;
+  transform: translateY(10px);
+}
+
+.seletor_usuario div.item:before {
+  content: "👤 ";
+}
+
+.seletor_mes div.item:before {
+  content: "📅 ";
+}
+
+div.sweet-alert.modal_loader {
+  background-color: #000000cc !important;
+}
+
+.display_flex_row {
+  display: flex;
+  gap: 15px;
+}
+
+.flex_start {
+  justify-content: flex-start;
+}
+
+fieldset.terminal_r textarea {
+  background-color: #272822;
+  font-size: 18px;
+  color: #f39c12;
+}
+
+.reactable-tag {
+  display: inline-block;
+  padding: 2px 12px;
+  border-radius: 15px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.reactable-status-success {
+  background: #d8f5d6;
+  color: #2f532d;
+}
+
+.reactable-status-pending {
+  background: #d4daf7;
+  color: #2a366f;
+}
+
+.reactable-status-danger {
+  background: #f7d4da;
+  color: #6f2a36;
+}
