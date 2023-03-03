@@ -5,9 +5,9 @@ account: leonardodonatonunes
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8433377
-bundleId: 6907826
+bundleId: 6909616
 url: https://leonardodonatonunes.shinyapps.io/familiarEconomy/
-when: 1677778282.44492
-lastSyncTime: 1677778282.44493
+when: 1677808244.73351
+lastSyncTime: 1677808244.73352
 asMultiple: FALSE
 asStatic: FALSE

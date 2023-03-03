@@ -19,9 +19,13 @@ if (conectar_db) {
 }
 
 #' @export
-receita_despesa <- function(db_pool, ano_ref = aux_geral$ano_ultimo_mes(), mes_ref = aux_geral$ultimo_mes()) {
+receita_despesa <- function(db_pool, df = NULL, ano_ref = aux_geral$ano_ultimo_mes(), mes_ref = aux_geral$ultimo_mes()) {
 
-  df <- dados$get_pagamento(db_pool, ano_ref = ano_ref, mes_ref = as.numeric(mes_ref))
+  if (is.null(df)) {
+
+    df <- dados$get_pagamento(db_pool, ano_ref = ano_ref, mes_ref = as.numeric(mes_ref))
+
+  }
 
   df_aux <-
     df |>
@@ -71,3 +75,9 @@ receita_despesa <- function(db_pool, ano_ref = aux_geral$ano_ultimo_mes(), mes_r
     echarts4r$e_legend(right = 0) |>  # move legend to the bottom
     echarts4r$e_tooltip(trigger = "axis") # tooltip
 }
+
+
+
+
+
+

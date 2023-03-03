@@ -32,8 +32,8 @@ pool_db <- function() {
     dbname = Sys.getenv("DB_POSTGRES_NAME"),
     host = Sys.getenv("DB_POSTGRES_HOST"),
     user = Sys.getenv("DB_POSTGRES_USER_NAME"),
-    password = Sys.getenv("DB_POSTGRES_USER_PWD")
-    #port= Sys.getenv("DB_POSTGRES_PORT")
+    password = Sys.getenv("DB_POSTGRES_USER_PWD"),
+    port= Sys.getenv("DB_POSTGRES_PORT")
   )
 
 }
