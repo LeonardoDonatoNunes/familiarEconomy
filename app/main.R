@@ -88,7 +88,7 @@ server <- function(id) {
     if (is_online()) {
 
       tryCatch({
-        db_pool <- db_connect$create_db_pool()
+        db_pool <- db_connect$pool_db()
       }, error = function(e) {
 
         shiny_aux$close_modal_loader()

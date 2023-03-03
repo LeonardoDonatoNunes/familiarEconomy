@@ -1,5 +1,5 @@
 box::use(
-  pool[poolCreate],
+  pool[poolCreate, dbPool],
   RPostgres[Postgres],
   DBI[dbConnect],
   shinyalert[shinyalert],
@@ -23,3 +23,17 @@ create_db_pool <- function() {
 
 }
 
+
+#' @export
+pool_db <- function() {
+
+  dbPool(
+    Postgres(),
+    dbname = Sys.getenv("DB_POSTGRES_NAME"),
+    host = Sys.getenv("DB_POSTGRES_HOST"),
+    user = Sys.getenv("DB_POSTGRES_USER_NAME"),
+    password = Sys.getenv("DB_POSTGRES_USER_PWD")
+    #port= Sys.getenv("DB_POSTGRES_PORT")
+  )
+
+}
