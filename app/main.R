@@ -1,5 +1,5 @@
 box::use(
-  shiny[bootstrapPage, moduleServer, observe, onStop, NS,reactive, renderText,actionButton, tags, textOutput, icon, renderUI, selectInput, tagList, reactiveValues, observeEvent, verbatimTextOutput, renderPrint],
+  shiny[bootstrapPage, updateQueryString, getQueryString, freezeReactiveValue, moduleServer, observe, onStop, NS,reactive, renderText,actionButton, tags, textOutput, icon, renderUI, selectInput, tagList, reactiveValues, observeEvent, verbatimTextOutput, renderPrint],
   shinyjs[useShinyjs, refresh, runjs],
   shinydashboard,
   stats[setNames],
@@ -42,6 +42,7 @@ ui <- function(id) {
         shinydashboard$dashboardSidebar(
 
           shinydashboard$sidebarMenu(
+            id = ns('sidebarID'),
             shinydashboard$menuItem("Painel", tabName = 'painel_inicial', icon = icon("chart-line")),
             shinydashboard$menuItem("Cadastrar Pagamentos", tabName = 'cadastro_pagamento', icon = icon("money-bill-transfer")),
             shinydashboard$menuItem("Cadastrar usuário", tabName = 'cadastro_usuario', icon = icon("user")),
@@ -59,7 +60,7 @@ ui <- function(id) {
             shinydashboard$tabItem('painel_inicial', painel_inicial$ui(ns('painel_inicial'))),
             shinydashboard$tabItem('cadastro_pagamento', cadastro_pagamento$ui(ns('cadastro_pagamento'))),
             shinydashboard$tabItem('cadastro_usuario', cadastro_usuario$ui(ns('cadastro_usuario'))),
-            # shinydashboard$tabItem('cadastro_receita', cadastro_receita$ui(ns('cadastro_receita'))),
+            #shinydashboard$tabItem('cadastro_receita', cadastro_receita$ui(ns('cadastro_receita'))),
             shinydashboard$tabItem('cadastro_cat_geral', cadastro_cat_geral$ui(ns('cadastro_cat_geral'))),
             shinydashboard$tabItem('cadastro_cat_espec', cadastro_cat_espec$ui(ns('cadastro_cat_espec')))
           )
@@ -76,6 +77,26 @@ server <- function(id) {
   moduleServer(id, function(input, output, session) {
 
     ns <- NS(id)
+
+
+    observeEvent(getQueryString(session)$tab, {
+      currentQueryString <- getQueryString(session)$tab # alternative: parseQueryString(session$clientData$url_search)$tab
+      if(is.null(input$sidebarID) || !is.null(currentQueryString) && currentQueryString != input$sidebarID){
+        freezeReactiveValue(input, "sidebarID")
+        shinydashboard$updateTabItems(session, "sidebarID", selected = currentQueryString)
+      }
+    }, priority = 1)
+
+    observeEvent(input$sidebarID, {
+      currentQueryString <- getQueryString(session)$tab # alternative: parseQueryString(session$clientData$url_search)$tab
+      pushQueryString <- paste0("?tab=", input$sidebarID)
+      if(is.null(currentQueryString) || currentQueryString != input$sidebarID){
+        freezeReactiveValue(input, "sidebarID")
+        updateQueryString(pushQueryString, mode = "push", session)
+      }
+    }, priority = 0)
+
+
 
     localStorageAux <- ns('localStorage')
 

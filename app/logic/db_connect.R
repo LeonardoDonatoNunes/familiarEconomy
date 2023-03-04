@@ -3,17 +3,19 @@ box::use(
   RPostgres[Postgres],
   DBI[dbConnect],
   shinyalert[shinyalert],
+  config,
 )
 
 #' @export
 create_con <- function() {
 
+  bd <- config$get('bd')
+
   dbConnect(Postgres(),
-            dbname = Sys.getenv("DB_POSTGRES_NAME"),
-            host = Sys.getenv("DB_POSTGRES_HOST"),
-            user = Sys.getenv("DB_POSTGRES_USER_NAME"),
-            password = Sys.getenv("DB_POSTGRES_USER_PWD"),
-            port= Sys.getenv("DB_POSTGRES_PORT"))
+            dbname = bd$name,
+            host = bd$host,
+            user = bd$user,
+            password = bd$pwd)
 }
 
 #' @export
@@ -27,13 +29,14 @@ create_db_pool <- function() {
 #' @export
 pool_db <- function() {
 
+  bd <- config$get('bd')
+
   dbPool(
     Postgres(),
-    dbname = Sys.getenv("DB_POSTGRES_NAME"),
-    host = Sys.getenv("DB_POSTGRES_HOST"),
-    user = Sys.getenv("DB_POSTGRES_USER_NAME"),
-    password = Sys.getenv("DB_POSTGRES_USER_PWD"),
-    port= Sys.getenv("DB_POSTGRES_PORT")
+    dbname = bd$name,
+    host = bd$host,
+    user = bd$user,
+    password = bd$pwd
   )
 
 }

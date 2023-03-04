@@ -5,7 +5,7 @@ box::use(
   stats[setNames],
   pool[poolCreate, poolCheckout, poolReturn],
   dbx[dbxUpdate, dbxInsert],
-  dplyr[filter, select]
+  dplyr[filter, select, mutate, left_join, group_by, summarise, if_else],
 )
 
 
@@ -202,5 +202,32 @@ vct_cat_espec <- function(db_pool, df = NULL) {
   }
 
   df$id |> setNames(df$nome)
+
+}
+
+
+#' @export
+gastos_usuario <- function(db_pool, df = NULL, usuario = NULL, usuario_id = NULL, ano_ref = aux_geral$ano_ultimo_mes(), mes_ref = aux_geral$ultimo_mes()) {
+
+  if (is.null(df)) {
+    df <- dados$get_pagamento(db_pool, usuario_id = usuario_id, ano_ref = ano_ref, mes_ref = as.numeric(mes_ref))
+  }
+
+  if (is.null(usuario)) {
+    usuario <- dados$get_usuario(db_pool)
+  }
+
+  n_usuario <- 1
+  if (nrow(usuario) > 0) {
+    n_usuario <- nrow(usuario)
+  }
+
+
+  df |>
+    filter(id == 15) |>
+    group_by(dividido) |>
+    summarise(valor = sum(valor)) |>
+    mutate(valor_parcial = if_else(dividido, valor/n_usuario, valor))
+
 
 }

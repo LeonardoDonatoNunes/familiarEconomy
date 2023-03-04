@@ -37,8 +37,8 @@ ui <- function(id, db_pool) {
                    )
     ),
 
-    shiny$column(8, reactableOutput(ns('tbl'))),
-    shiny$column(4, echarts4rOutput(ns('plt_receita_despesa')))
+    reactableOutput(ns('tbl')),
+    echarts4rOutput(ns('plt_receita_despesa'))
 
   )
 
