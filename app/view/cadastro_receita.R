@@ -1,9 +1,10 @@
 box::use(
   shiny,
   reactable[reactableOutput, renderReactable],
-  dplyr[slice, pull, filter],
-  shinyjs[show, hide, hidden, reset],
+  dplyr[slice, pull, filter, add_row, select, mutate],
+  shinyjs[show, hide, hidden, reset, disable, enable],
   shinyWidgets,
+  shinyalert[shinyalert],
 )
 
 box::use(
@@ -11,6 +12,7 @@ box::use(
   app/logic/dados,
   app/logic/aux_geral,
   app/logic/vis_tabelas,
+  app/view/shiny_aux,
 
 )
 
@@ -22,22 +24,29 @@ ui <- function(id) {
 
     shiny$column(
       3,
-      shiny$textInput(ns('nome'), "Nome da receita"),
-      shinyWidgets$currencyInput(ns('valor'), "Valor", 0, format = "Brazilian"),
-      shiny$checkboxInput(ns('mensal'), "Receita mensal", value = TRUE),
-      shiny$selectInput(ns('ano_ref'), "Ano referência", choices = aux_geral$vct_anos(), selected = aux_geral$ano_ultimo_mes()),
-      shiny$selectInput(ns('mes_ref'), "Mês referência", choices = aux_geral$vct_meses(), selected = aux_geral$ultimo_mes()),
-      shiny$actionButton(ns('salvar'), "Salvar", icon = shiny$icon("cloud-arrow-up")),
-      hidden(shiny$actionButton(ns('deletar'), "Deletar", icon = shiny$icon("trash")))
+      shiny$tags$fieldset(
+        shiny$tags$legend(
+          shiny$tags$span(
+            'Cadastro de receita',
+            style = 'float:left'
+          )),
+        shiny$textInput(ns('nome'), "Nome da receita"),
+        shiny$checkboxInput(ns('mensal'), "Renda mensal", value = TRUE),
+        shinyWidgets$currencyInput(ns('valor'), "Valor", 0, format = "Brazilian"),
+        shiny$dateInput(ns('data_ini'), "Dada inicial"),
+        shiny$dateInput(ns('data_fim'), "Dada final"),
+        shiny$checkboxInput(ns('receita_atual'), "Receita atual", value = TRUE),
+        shiny$actionButton(ns('adicionar'), "Adicionar", icon = shiny$icon("circle-plus")),
+        hidden(shiny$actionButton(ns('arquivar'), "Arquivar", icon = shiny$icon("box"))),
+        hidden(shiny$actionButton(ns('deletar'), "Deletar", icon = shiny$icon("trash")))
+      ),
+      shiny$actionButton(ns('desfazer'), "Desfazer alterações", icon = shiny$icon("trash-arrow-up")),
+      shiny$actionButton(ns('salvar'), "Salvar", icon = shiny$icon("cloud-arrow-up"))
+
     ),
 
     shiny$column(
       9,
-      shiny$tags$div(
-        class = 'display_flex_row flex_start',
-        shiny$checkboxInput(ns('filtrar_periodo'), "Filtrar período selecionado", value = TRUE, width = 'auto'),
-        shiny$checkboxInput(ns('filtrar_usuario'), "Filtrar usuário selecionado", value = TRUE, width = 'auto')
-      ),
       reactableOutput(ns('tbl'))
     )
 
@@ -47,17 +56,104 @@ ui <- function(id) {
 }
 
 #' @export
-server <- function(id, reac_geral, db_pool){
+server <- function(id, reac_geral, db_pool = NULL){
 
   shiny$moduleServer(id, function(input, output, session) {
 
-    reac <- NULL
-    reac <- shiny$reactiveValues(receita = dados$get_receita(db_pool), receita_sel = NULL)
+    ns <- shiny$NS(id)
+    reac <- shiny$reactiveValues(receita_sel = NULL)
+
+    aux_geral$ativar_delete_key(ns('deletar'))
+
+    shiny$observe({
+      if (!is.null(db_pool)) {
+        reac_geral$receita <- dados$get_receita(db_pool)
+      }
+    })
+
+
+    shiny$observeEvent(input$adicionar, {
+
+      id_temp <- reac$receita_sel$id
+      novo_id <- FALSE
+
+      if (is.null(id_temp)) {
+
+        novo_id <- TRUE
+
+        if (nrow(reac_geral$receita) > 0) {
+          id_temp <-   reac_geral$receita$id |> max() + 1
+        } else {
+          id_temp <- 1
+        }
+      }
+
+      usuario <- reac_geral$usuario |> filter(id == reac_geral$usuario_sel) |> pull(nome)
+      data_fim <- input$data_fim
+      if (input$receita_atual) {
+        data_fim <- NA
+      }
+
+
+
+      nova_linha = data.frame(
+        id = id_temp,
+        nome = input$nome,
+        usuario_id = reac_geral$usuario_sel,
+        mensal = input$mensal,
+        valor = input$valor,
+        data_ini = input$data_ini,
+        data_fim = data_fim,
+        usuario = usuario,
+        add = TRUE,
+        new = novo_id
+      )
+
+      reac_geral$receita <- shiny$isolate(
+        reac_geral$receita |>
+          filter(id != nova_linha$id) |>
+          add_row(nova_linha)
+      )
+
+      reset('nome')
+      reset('descricao')
+    })
 
     shiny$observeEvent(input$salvar, {
-      dados$upsert_receita(db_pool, id = reac$receita_sel$id, nome = input$nome, usuario_id = reac_geral$usuario_sel, valor = input$valor, mensal = input$mensal, ano_ref = input$ano_ref, mes_ref = input$mes_ref)
-      reac$receita <- shiny$isolate(dados$get_receita(db_pool))
-      reset('nome')
+
+      shiny_aux$modal_loader("Aguarde", "Salvando categorias")
+
+      df_aux <-
+        reac_geral$receita |>
+        filter(add) |>
+        mutate(id = ifelse(new, NA, id)) |>
+        select(-usuario, -add, -new)
+
+      resp <- dados$upsert_df(db_pool, 'receita', df_aux)
+
+      if (resp$status) {
+
+        reac_geral$receita <- dados$get_receita(db_pool)
+        shiny_aux$close_modal_loader()
+        shinyalert("Receita salva", type = 'success')
+
+      } else {
+
+        shiny_aux$close_modal_loader()
+        shinyalert("Erro", text = resp$error, type = 'error')
+
+      }
+
+    })
+
+    shiny$observeEvent(input$receita_atual, {
+
+      if (input$receita_atual){
+        disable(id = 'data_fim')
+      } else {
+        enable(id = 'data_fim')
+      }
+
     })
 
     shiny$observeEvent(input$tbl__reactable__selected, ignoreNULL = FALSE, {
@@ -65,21 +161,27 @@ server <- function(id, reac_geral, db_pool){
       if (!is.null(input$tbl__reactable__selected)) {
 
         reac$receita_sel <-
-          reac$receita |>
+          reac_geral$receita |>
           slice(input$tbl__reactable__selected)
 
         shiny$updateTextInput(inputId = 'nome', value = reac$receita_sel$nome)
+        shiny$updateCheckboxInput(inputId = 'mensal', value = reac$receita_sel$mensal)
         shinyWidgets$updateCurrencyInput(inputId = 'valor', value = reac$receita_sel$valor)
-        shiny$updateSelectInput(inputId = 'ano_sel', selected = reac$receita_sel$ano_sel)
-        shiny$updateSelectInput(inputId = 'mes_sel', selected = reac$receita_sel$mes_sel)
-
+        shiny$updateDateInput(inputId = 'data_ini', value = reac$receita_sel$data_ini)
+        shiny$updateDateInput(inputId = 'data_fim', value = reac$receita_sel$data_fim)
+        shiny$updateActionButton(inputId = 'adicionar', label = "Atualizar", icon = shiny$icon("pen-to-square"))
+        show('arquivar')
         show('deletar')
 
       } else {
 
         reac$receita_sel <- NULL
+        hide('arquivar')
         hide('deletar')
         reset('nome')
+        reset('data_ini')
+        reset('data_fim')
+        shiny$updateActionButton(inputId = 'adicionar', label = "Adicionar", icon = shiny$icon("circle-plus"))
 
       }
 
@@ -87,51 +189,37 @@ server <- function(id, reac_geral, db_pool){
     })
 
     shiny$observeEvent(input$deletar, {
-      dados$delete_from_tabela(db_pool, 'receita', id = reac$receita_sel$id)
-      reac$receita <- dados$get_receita(db_pool)
-      reset('nome')
-    })
 
-    shiny$observe({
+      df_aux <-
+        reac_geral$receita |>
+        filter(id == reac$receita_sel$id)
 
-      if (all(!is.null(input$ano_ref), !is.null(input$mes_ref))) {
+      if (df_aux$new | df_aux$add) {
 
-        reac$receita_vis <- reac$receita
+        reac_geral$receita <- reac_geral$receita |> filter(id != reac$receita_sel$id)
+        reset('nome')
 
-        if (!is.null(input$filtrar_periodo)) {
+      } else {
 
-          if (input$filtrar_periodo) {
-            reac$receita_vis <- shiny$isolate(
-              reac$receita_vis |>
-                filter(
-                  ano_ref == input$ano_ref,
-                  mes_ref == input$mes_ref
-                )
-            )
-          }
+        dados$delete_from_tabela(db_pool, 'receita', id = reac$receita_sel$id)
+        reac_geral$receita <- reac_geral$receita |> filter(id != reac$receita_sel$id)
+        reset('nome')
 
-        }
-
-        if (!is.null(input$filtrar_usuario)) {
-          if (input$filtrar_usuario) {
-
-            if (!is.null(reac_geral$usuario_sel)) {
-
-              reac$receita_vis <- shiny$isolate(
-                reac$receita_vis |>
-                  filter(
-                    usuario_id == reac_geral$usuario_sel
-                  )
-              )
-            }
-          }
-        }
       }
+
     })
 
+    shiny$observeEvent(input$desfazer, {
+
+      reac_geral$receita <-
+        reac_geral$receita |>
+        filter(!new | !add)
+    })
 
     output$tbl <- renderReactable({
-      vis_tabelas$tbl_receita(db_pool, df = reac$receita_vis)
+
+      vis_tabelas$tbl_receita(db_pool, df = reac_geral$receita)
+
     })
 
   })

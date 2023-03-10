@@ -208,12 +208,28 @@ set_class_parcela <- function(value) {
 
 
   if (!is.na(value)) {
-    status <- if (value == "1/1") {"pending"} else if (eval(parse(text = value)) < 1) {"danger"} else {"success"}
+    status <- if (value == "M") {"pending"} else if (eval(parse(text = value)) < 1) {"danger"} else {"success"}
     class <- paste0("reactable-tag reactable-status-", tolower(status))
-    label <- if (value == "1/1") {"M"} else {value}
-    tags$div(class = class, label)
+    tags$div(class = class, value)
   } else {
     tags$div(value)
   }
+
+}
+
+
+#' @export
+ativar_delete_key <- function(id) {
+
+  js_code <- glue::glue(
+    .open = '<<', .close = '>>',
+    "
+    $(document).keyup(function(event){
+      if(event.key == 'Delete'){
+          $('#app-<<id>>').click();
+    }});
+  ")
+
+  runjs(js_code)
 
 }

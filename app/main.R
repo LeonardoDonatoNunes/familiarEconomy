@@ -1,5 +1,5 @@
 box::use(
-  shiny[bootstrapPage, updateQueryString, getQueryString, freezeReactiveValue, moduleServer, observe, onStop, NS,reactive, renderText,actionButton, tags, textOutput, icon, renderUI, selectInput, tagList, reactiveValues, observeEvent, verbatimTextOutput, renderPrint],
+  shiny[bootstrapPage, updateQueryString, getQueryString, textAreaInput, actionLink, checkboxInput, modalButton, freezeReactiveValue, moduleServer, observe, onStop, NS,reactive, renderText,actionButton, tags, textOutput, icon, renderUI, selectInput, tagList, reactiveValues, observeEvent, verbatimTextOutput, renderPrint, showModal, modalDialog],
   shinyjs[useShinyjs, refresh, runjs],
   shinydashboard,
   stats[setNames],
@@ -12,9 +12,10 @@ box::use(
 
 box::use(
   app/logic/db_connect,
+  app/logic/aux_geral,
   app/logic/dados,
   app/view/cadastro_usuario,
-  # app/view/cadastro_receita,
+  app/view/cadastro_receita,
   app/view/cadastro_pagamento,
   app/view/cadastro_cat_geral,
   app/view/cadastro_cat_espec,
@@ -46,10 +47,11 @@ ui <- function(id) {
             shinydashboard$menuItem("Painel", tabName = 'painel_inicial', icon = icon("chart-line")),
             shinydashboard$menuItem("Cadastrar Pagamentos", tabName = 'cadastro_pagamento', icon = icon("money-bill-transfer")),
             shinydashboard$menuItem("Cadastrar usuário", tabName = 'cadastro_usuario', icon = icon("user")),
-            # shinydashboard$menuItem("Cadastrar receita", tabName = 'cadastro_receita', icon = icon("hand-holding-dollar")),
+            shinydashboard$menuItem("Cadastrar receita", tabName = 'cadastro_receita', icon = icon("hand-holding-dollar")),
             shinydashboard$menuItem("Cadastrar Categoria geral", tabName = 'cadastro_cat_geral', icon = icon("sitemap")),
             shinydashboard$menuItem("Cadastrar Categoria específica", tabName = 'cadastro_cat_espec', icon = icon("list-ul"))
-          )
+          ),
+          actionLink(ns('abrir_terminal'), "Terminal ", icon = icon("r-project"))
 
         ),
 
@@ -60,7 +62,7 @@ ui <- function(id) {
             shinydashboard$tabItem('painel_inicial', painel_inicial$ui(ns('painel_inicial'))),
             shinydashboard$tabItem('cadastro_pagamento', cadastro_pagamento$ui(ns('cadastro_pagamento'))),
             shinydashboard$tabItem('cadastro_usuario', cadastro_usuario$ui(ns('cadastro_usuario'))),
-            #shinydashboard$tabItem('cadastro_receita', cadastro_receita$ui(ns('cadastro_receita'))),
+            shinydashboard$tabItem('cadastro_receita', cadastro_receita$ui(ns('cadastro_receita'))),
             shinydashboard$tabItem('cadastro_cat_geral', cadastro_cat_geral$ui(ns('cadastro_cat_geral'))),
             shinydashboard$tabItem('cadastro_cat_espec', cadastro_cat_espec$ui(ns('cadastro_cat_espec')))
           )
@@ -77,7 +79,7 @@ server <- function(id) {
   moduleServer(id, function(input, output, session) {
 
     ns <- NS(id)
-
+    reac <- reactiveValues()
 
     observeEvent(getQueryString(session)$tab, {
       currentQueryString <- getQueryString(session)$tab # alternative: parseQueryString(session$clientData$url_search)$tab
@@ -189,6 +191,7 @@ server <- function(id) {
         teste <-
           all(
             !is.null(reac_geral$usuario),
+            !is.null(reac_geral$receita),
             !is.null(reac_geral$cat_geral),
             !is.null(reac_geral$cat_espec),
             !is.null(reac_geral$pagamento)
@@ -206,9 +209,7 @@ server <- function(id) {
 
       observeEvent(input$usuario_sel, {
 
-        if (input$usuario_sel != '') {
-          reac_geral$usuario_sel <- input$usuario_sel
-        }
+        reac_geral$usuario_sel <- as.numeric(input$usuario_sel)
 
         runjs(
           glue("localStorage.setItem(\"usuario\", '{\"id\": <<input$usuario_sel>>}');", .open = "<<", .close = ">>")
@@ -216,13 +217,82 @@ server <- function(id) {
 
       })
 
+      observeEvent(input$abrir_terminal, {
+        modal_terminal()
+      })
+
 
       painel_inicial$server('painel_inicial', db_pool)
       cadastro_usuario$server('cadastro_usuario', db_pool, reac_geral)
-      # cadastro_receita$server('cadastro_receita', reac_geral, db_pool)
+      cadastro_receita$server('cadastro_receita', reac_geral, db_pool)
       cadastro_pagamento$server('cadastro_pagamento', reac_geral, db_pool)
       cadastro_cat_geral$server('cadastro_cat_geral', reac_geral, db_pool)
       cadastro_cat_espec$server('cadastro_cat_espec', reac_geral, db_pool)
+
+
+
+
+      observeEvent(input$executar, {
+
+        tryCatch({
+
+          resultado_r <- eval(parse(text = input$terminal_r))
+
+          if (input$formatar_real) {
+
+            if (is.numeric(resultado_r)) {
+              reac$resultado_r <- aux_geral$real_fmt(resultado_r)
+            } else {
+              reac$resultado_r <- resultado_r
+            }
+
+          } else {
+            reac$resultado_r <- resultado_r
+          }
+
+        }, error = function(e) {
+
+          reac$resultado_r <- e
+
+        })
+
+      })
+
+      output$resultado_r <- renderText({reac$resultado_r})
+
+
+
+
+      modal_terminal <- function() {
+
+        showModal(
+          modalDialog(
+
+            title = NULL,
+            text = NULL,
+            footer = list(modalButton(label = "Encerrar")),
+
+            tagList(
+              tags$fieldset(
+                class = 'terminal_r',
+                tags$legend("Rascunho R"),
+                textAreaInput(
+                  ns('terminal_r'),
+                  label = NULL,
+                  height = '150px',
+                  width = '80%',
+                  placeholder = "Terminal R para executar contas e funções simples do R base"),
+                actionButton(ns('executar'), "Executar", icon = icon('r-project')),
+                checkboxInput(ns('formatar_real'), "Formatar como Real", value = TRUE),
+                tags$h3(class = 'console_r', textOutput(ns('resultado_r')))
+              )
+            )
+
+          )
+        )
+      }
+
+
 
 
     }

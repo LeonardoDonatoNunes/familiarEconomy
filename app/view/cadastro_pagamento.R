@@ -53,19 +53,7 @@ ui <- function(id) {
         shiny$checkboxInput(ns('filtrar_periodo'), "Filtrar período selecionado", value = TRUE, width = 'auto'),
         shiny$checkboxInput(ns('filtrar_usuario'), "Filtrar usuário selecionado", value = TRUE, width = 'auto')
       ),
-      reactableOutput(ns('tbl')),
-
-      shiny$tags$fieldset(
-        class = 'terminal_r',
-        shiny$tags$legend("Rascunho R"),
-        shiny$textAreaInput(
-          ns('terminal_r'),
-          label = NULL,
-          height = '150px',
-          placeholder = "Terminal R para executar contas e funções simples do R base"),
-        shiny$actionButton(ns('executar'), "Executar", icon = shiny$icon('r-project')),
-        shiny$tags$h3(class = 'console_r', shiny$textOutput(ns('resultado_r')))
-      )
+      reactableOutput(ns('tbl'))
 
     )
 
@@ -295,20 +283,6 @@ server <- function(id, reac_geral, db_pool = NULL){
         vis_tabelas$tbl_pagamentos(db_pool, df = reac_geral$pagamento)
       }
     })
-
-    shiny$observeEvent(input$executar, {
-
-      tryCatch({
-        reac$resultado_r <- eval(parse(text = input$terminal_r))
-      }, error = function(e) {
-
-        reac$resultado_r <- e
-
-      })
-
-    })
-
-    output$resultado_r <- shiny$renderText({reac$resultado_r})
 
 
   })

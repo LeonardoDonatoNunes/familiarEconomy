@@ -3,6 +3,17 @@ box::use(
   pool[poolCheckout, poolReturn],
 )
 
+
+if (FALSE) {
+
+  box::use(app/logic/db_connect)
+
+  db_pool <- db_connect$pool_db()
+
+}
+
+
+
 #' @export
 create_table_usuario <- function(db_pool) {
 
@@ -37,8 +48,8 @@ create_table_receita <- function(db_pool) {
             	usuario_id int NULL,
             	mensal boolean NULL,
             	valor real NULL,
-            	ano_ref int NULL,
-            	mes_ref int NULL,
+              data_ini date NULL,
+              data_fim date NULL,
             	CONSTRAINT receita_pk PRIMARY KEY (id),
             	CONSTRAINT receita_un UNIQUE (id),
             	CONSTRAINT receita_fk FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE ON UPDATE CASCADE

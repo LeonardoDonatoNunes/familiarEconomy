@@ -46,8 +46,8 @@ tbl_receita <- function(db_pool, df = NULL){
       nome = colDef(name = "Nome da receita", align = 'left', footer = "Total"),
       mensal = colDef(cell = aux_geral$create_check_col, style = aux_geral$lgl_style, name = "Receita mensal"),
       valor = colDef(cell = aux_geral$real_fmt, name = "Valor", footer = aux_geral$real_fmt(sum(df$valor))),
-      ano_ref = colDef(name = 'Ano'),
-      mes_ref = colDef(cell = aux_geral$lbl_mes, name = 'Mês'),
+      data_ini = colDef(name = 'Início da receita'),
+      data_fim = colDef(name = 'Fim da receita', na = "Receita atual"),
       add = colDef(name = "Salvo", cell = aux_geral$create_check_col, style = aux_geral$lgl_style, minWidth = 50, maxWidth = 100),
       usuario = colDef(name = "Usuário")
     )
@@ -67,7 +67,8 @@ tbl_pagamentos <- function(db_pool, df = NULL) {
     mutate(add = !add) |>
     mutate(
       valor_parcial = ifelse(dividido == 1, valor/nrow(df_usuario), valor ),
-      parcelas = glue("{parcela_numero}/{numero_parcelas}")) |>
+      parcelas = glue("{parcela_numero}/{numero_parcelas}"),
+      parcelas = ifelse(mensal, "M", parcelas)) |>
     select(geral, especifica, mensal, dividido, ano_ref, mes_ref, usuario, parcelas,valor_parcial, valor, add)
 
   df_aux |>
@@ -75,7 +76,7 @@ tbl_pagamentos <- function(db_pool, df = NULL) {
       .selection = colDef(show = FALSE),
       ano_ref = colDef(name = "Ano"),
       mes_ref = colDef(cell = aux_geral$lbl_mes, name = "Mes"),
-      parcelas = colDef(cell = aux_geral$set_class_parcela, name = "P", minWidth = 50, maxWidth = 60),
+      parcelas = colDef(cell = aux_geral$set_class_parcela, name = "P", minWidth = 60, maxWidth = 70),
       valor = colDef(cell = aux_geral$real_fmt, name = "Valor", footer = aux_geral$real_fmt(sum(df_aux$valor))),
       valor_parcial = colDef(cell = aux_geral$real_fmt, name = "Valor parcial", footer = aux_geral$real_fmt(sum(df_aux$valor_parcial))),
       usuario = colDef(name = "Usuário"),

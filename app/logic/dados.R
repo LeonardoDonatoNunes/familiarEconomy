@@ -84,14 +84,16 @@ get_usuario <- function(db_pool,id = NULL, nome = NULL) {
 
 
 #' @export
-get_receita <- function(db_pool, id = NULL, nome = NULL, ano_ref = NULL, mes_ref = NULL) {
+get_receita <- function(db_pool, id = NULL, nome = NULL, data_ini = NULL, data_fim = NULL) {
 
   con <- poolCheckout(db_pool)
 
-  where <- aux_geral$create_where(c(r.id = id, r.nome = nome, r.ano_ref = ano_ref, r.mes_ref = mes_ref))
+  where <- aux_geral$create_where(c(r.id = id, r.nome = nome))
   statement <- glue("
         select r.*,
-               u.nome as usuario
+               u.nome as usuario,
+               FALSE as add,
+               FALSE as new
           from receita r
      left join usuario u on r.usuario_id = u.id{where};")
 
